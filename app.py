@@ -26,7 +26,7 @@ col1, col2 = st.columns(2)
 
 with col1:
     current_rank = st.selectbox("Rank Sekarang", rank_order, index=5)
-    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1)", min_value=1, max_value=5, value=4)
+    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1)", min_value=0, max_value=5, value=4)
     current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=10000, value=3)
 
 with col2:
