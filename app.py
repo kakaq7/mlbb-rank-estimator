@@ -25,12 +25,12 @@ col1, col2 = st.columns(2)
 
 with col1:
     current_rank = st.selectbox("Rank Sekarang", rank_order, index=5)
-    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1, atau 0 untuk Mythic)", min_value=0, max_value=5, value=2)
+    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1, atau 0 untuk Mythic)", min_value=0, max_value=5, value=3)
     current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=50, value=5)
 
 with col2:
-    target_rank = st.selectbox("Rank Target", rank_order, index=6)
-    target_division = st.number_input("Divisi Rank Target (atau 0 untuk Mythic)", min_value=0, max_value=5, value=0)
+    target_rank = st.selectbox("Rank Target", rank_order, index=5)
+    target_division = st.number_input("Divisi Rank Target (atau 0 untuk Mythic)", min_value=0, max_value=5, value=2)
     target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=1)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
@@ -56,15 +56,20 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
             if rank != "Mythic":
                 for div in range(start_div, 0, -1):
                     if rank == end_rank and div == end_div:
-                        bintang_tersisa = max(0, end_star - start_star)
-                        total_stars += bintang_tersisa
+                        if start_star == bintang_per_div:
+                            total_stars += 1  # promosi ke divisi berikutnya
+                        else:
+                            total_stars += max(0, end_star - start_star)
                         break
                     elif div == start_div:
-                        total_stars += bintang_per_div - start_star
+                        if start_star == bintang_per_div:
+                            total_stars += 1  # langsung promosi
+                        else:
+                            total_stars += bintang_per_div - start_star
                     else:
                         total_stars += bintang_per_div
             else:
-                total_stars += 0  # tidak relevan
+                total_stars += 0
 
         elif rank == end_rank:
             if rank == "Mythic":
