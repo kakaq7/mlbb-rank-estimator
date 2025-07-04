@@ -73,10 +73,8 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
                 for div in range(start_div, 0, -1):
                     if rank == end_rank and div == end_div:
                         if start_star == stars_per_div:
-                            # promosi langsung ke divisi dalam rank yang sama
                             if start_rank == end_rank and start_div - 1 == end_div:
                                 return end_star
-                            # promosi ke rank berikut divisi 5
                             elif rank_order.index(end_rank) == rank_order.index(start_rank) + 1 and end_div == 5:
                                 return end_star
                             else:
@@ -111,7 +109,8 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
                     total_stars += end_star
 
         elif start_index < i < end_index:
-            total_stars += 5 * stars_per_div
+            if rank != "Mythic":
+                total_stars += 5 * stars_per_div
 
     return total_stars
 
@@ -130,4 +129,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismajhgill](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**"
