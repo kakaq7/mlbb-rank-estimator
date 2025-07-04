@@ -20,17 +20,30 @@ rank_bintang_default = {
     "Mythic": 0  # Mythic tidak punya divisi
 }
 
+# Divisi dalam format angka (1-5) ditampilkan sebagai label Romawi
+divisi_labels = {
+    "I (tertinggi)": 1,
+    "II": 2,
+    "III": 3,
+    "IV": 4,
+    "V (terendah)": 5,
+    "Mythic (tanpa divisi)": 0
+}
+divisi_options = list(divisi_labels.keys())
+
 # Input user
 col1, col2 = st.columns(2)
 
 with col1:
     current_rank = st.selectbox("Rank Sekarang", rank_order, index=5)
-    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1, atau 0 untuk Mythic)", min_value=0, max_value=5, value=3)
+    current_division_label = st.selectbox("Divisi Rank Sekarang", divisi_options, index=2)
+    current_division = divisi_labels[current_division_label]
     current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=50, value=5)
 
 with col2:
     target_rank = st.selectbox("Rank Target", rank_order, index=5)
-    target_division = st.number_input("Divisi Rank Target (atau 0 untuk Mythic)", min_value=0, max_value=5, value=2)
+    target_division_label = st.selectbox("Divisi Rank Target", divisi_options, index=1)
+    target_division = divisi_labels[target_division_label]
     target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=4)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
@@ -60,7 +73,11 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
                 for div in range(start_div, 0, -1):
                     if rank == end_rank and div == end_div:
                         if start_star == stars_per_div:
+                            # promosi langsung ke divisi dalam rank yang sama
                             if start_rank == end_rank and start_div - 1 == end_div:
+                                return end_star
+                            # promosi ke rank berikut divisi 5
+                            elif rank_order.index(end_rank) == rank_order.index(start_rank) + 1 and end_div == 5:
                                 return end_star
                             else:
                                 total_stars += 1
@@ -71,6 +88,8 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
                     elif div == start_div:
                         if start_star == stars_per_div:
                             if start_rank == end_rank and start_div - 1 == end_div:
+                                return end_star
+                            elif rank_order.index(end_rank) == rank_order.index(start_rank) + 1 and end_div == 5:
                                 return end_star
                             else:
                                 total_stars += 1
@@ -107,8 +126,8 @@ if winrate == 0:
     st.error("Winrate tidak boleh 0%")
 else:
     estimated_matches = math.ceil(total_bintang / winrate)
-    st.success(f"Kamu membutuhkan sekitar {estimated_matches} pertandingan untuk naik dari {current_rank} {current_division if current_rank != 'Mythic' else ''} ⭐{current_stars} ke {target_rank} {target_division if target_rank != 'Mythic' else ''} ⭐{target_stars}, dengan winrate {winrate_percent}%")
+    st.success(f"Kamu membutuhkan sekitar {estimated_matches} pertandingan untuk naik dari {current_rank} {current_division_label if current_rank != 'Mythic' else ''} ⭐{current_stars} ke {target_rank} {target_division_label if target_rank != 'Mythic' else ''} ⭐{target_stars}, dengan winrate {winrate_percent}%")
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.isbvcmaill](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.ismajhgill](https://instagram.com/al.ismaill)**")
