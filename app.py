@@ -72,10 +72,6 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
         elif start_found:
             total_stars += 5 * bintang_per_div
 
-    # Tambahkan 1 untuk promosi ke Mythic jika rank target Mythic
-    if end_rank == "Mythic":
-        total_stars += 1
-
     return total_stars
 
 # Hitung
