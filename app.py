@@ -60,14 +60,21 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
                 for div in range(start_div, 0, -1):
                     if rank == end_rank and div == end_div:
                         if start_star == stars_per_div:
-                            total_stars += 1 + max(0, end_star - 1)
+                            if start_rank == end_rank and start_div - 1 == end_div:
+                                return end_star
+                            else:
+                                total_stars += 1
+                                promoted_early = True
                         else:
                             total_stars += max(0, (stars_per_div - start_star) + end_star)
                         return total_stars
                     elif div == start_div:
                         if start_star == stars_per_div:
-                            total_stars += 1
-                            promoted_early = True
+                            if start_rank == end_rank and start_div - 1 == end_div:
+                                return end_star
+                            else:
+                                total_stars += 1
+                                promoted_early = True
                         else:
                             total_stars += stars_per_div - start_star
                     else:
@@ -79,7 +86,7 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
             else:
                 for div in range(5, end_div, -1):
                     total_stars += stars_per_div
-                if promoted_early and end_star > 1:
+                if promoted_early and end_star > 0:
                     total_stars += end_star - 1
                 else:
                     total_stars += end_star
@@ -104,4 +111,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.isbvcmaill](https://instagram.com/al.ismaill)**")
