@@ -41,10 +41,11 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     if start_rank == end_rank == "Mythic":
         return max(0, end_star - start_star)
 
-    # Jika langsung promosi saat bintang penuh (misalnya Legend I bintang 5 ke Mythic 1)
-    if start_rank != "Mythic" and end_rank == "Mythic":
-        if start_div == 1 and start_star == rank_bintang_default[start_rank]:
-            return 1 + (end_star - 1)  # 1 untuk promosi, sisanya bintang Mythic
+    # Jika transisi dari Legend I langsung ke Mythic
+    if start_rank != "Mythic" and end_rank == "Mythic" and start_rank == "Legend" and start_div == 1:
+        # Total bintang tersisa untuk promosi
+        bintang_tersisa = rank_bintang_default[start_rank] - start_star
+        return bintang_tersisa + (end_star - 1) + 1  # termasuk 1 kemenangan untuk promosi
 
     ranks = rank_order[rank_order.index(start_rank): rank_order.index(end_rank)+1]
     total_stars = 0
