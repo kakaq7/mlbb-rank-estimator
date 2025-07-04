@@ -31,7 +31,7 @@ with col1:
 with col2:
     target_rank = st.selectbox("Rank Target", rank_order, index=5)
     target_division = st.number_input("Divisi Rank Target (atau 0 untuk Mythic)", min_value=0, max_value=5, value=2)
-    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=1)
+    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=4)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
 winrate = winrate_percent / 100
@@ -47,6 +47,7 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     total_stars = 0
     start_index = rank_order.index(start_rank)
     end_index = rank_order.index(end_rank)
+    promoted_early = False
 
     for i in range(start_index, end_index + 1):
         rank = rank_order[i]
@@ -59,12 +60,14 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
                 for div in range(start_div, 0, -1):
                     if rank == end_rank and div == end_div:
                         if start_star == stars_per_div:
-                            return 1  # langsung promosi ke divisi berikut dengan 1 pertandingan
+                            total_stars += 1 + max(0, end_star - 1)
                         else:
-                            return max(0, (stars_per_div - start_star) + end_star)
+                            total_stars += max(0, (stars_per_div - start_star) + end_star)
+                        return total_stars
                     elif div == start_div:
                         if start_star == stars_per_div:
-                            total_stars += 1  # langsung promosi
+                            total_stars += 1
+                            promoted_early = True
                         else:
                             total_stars += stars_per_div - start_star
                     else:
@@ -76,7 +79,10 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
             else:
                 for div in range(5, end_div, -1):
                     total_stars += stars_per_div
-                total_stars += end_star
+                if promoted_early and end_star > 1:
+                    total_stars += end_star - 1
+                else:
+                    total_stars += end_star
 
         elif start_index < i < end_index:
             total_stars += 5 * stars_per_div
@@ -98,4 +104,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismhdhdll](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**")
