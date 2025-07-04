@@ -21,6 +21,29 @@ rank_bintang_default = {
 }
 
 # Input user
+import streamlit as st
+import math
+
+st.set_page_config(page_title="MLBB Rank Match Estimator", layout="centered")
+st.title("📈 Estimasi Pertandingan Naik Rank - Mobile Legends")
+
+# Mapping dari urutan rank MLBB dan bintang
+rank_order = [
+    "Warrior", "Elite", "Master", "Grandmaster",
+    "Epic", "Legend", "Mythic"
+]
+
+rank_bintang_default = {
+    "Warrior": 3,
+    "Elite": 4,
+    "Master": 4,
+    "Grandmaster": 5,
+    "Epic": 5,
+    "Legend": 5,
+    "Mythic": 0  # Mythic tidak punya divisi
+}
+
+# Input user
 col1, col2 = st.columns(2)
 
 with col1:
@@ -44,50 +67,42 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     if start_rank == end_rank and start_div == end_div:
         return max(0, end_star - start_star)
 
-    ranks = rank_order[rank_order.index(start_rank): rank_order.index(end_rank)+1]
     total_stars = 0
-    start_found = False
-    current_promoted = False
+    start_index = rank_order.index(start_rank)
+    end_index = rank_order.index(end_rank)
 
-    for idx, rank in enumerate(ranks):
-        bintang_per_div = rank_bintang_default.get(rank, 0)
+    for i in range(start_index, end_index + 1):
+        rank = rank_order[i]
+        stars_per_div = rank_bintang_default[rank]
 
         if rank == start_rank:
-            start_found = True
-            if rank != "Mythic":
-                for div in range(start_div, 0, -1):
-                    if current_promoted:
-                        current_promoted = False
-                        continue
-
-                    if rank == end_rank and div == end_div:
-                        if start_star == bintang_per_div:
-                            total_stars += 1
-                        else:
-                            total_stars += max(0, end_star - start_star)
-                        break
-
-                    elif div == start_div:
-                        if start_star == bintang_per_div:
-                            total_stars += 1
-                            current_promoted = True
-                        else:
-                            total_stars += bintang_per_div - start_star
-                    else:
-                        total_stars += bintang_per_div
-            else:
+            if rank == "Mythic":
                 total_stars += 0
+            else:
+                for div in range(start_div, 0, -1):
+                    if rank == end_rank and div == end_div:
+                        if start_star == stars_per_div:
+                            return 1  # langsung promosi ke divisi berikut dengan 1 pertandingan
+                        else:
+                            return max(0, (stars_per_div - start_star) + end_star)
+                    elif div == start_div:
+                        if start_star == stars_per_div:
+                            total_stars += 1  # langsung promosi
+                        else:
+                            total_stars += stars_per_div - start_star
+                    else:
+                        total_stars += stars_per_div
 
         elif rank == end_rank:
             if rank == "Mythic":
                 total_stars += end_star
             else:
                 for div in range(5, end_div, -1):
-                    total_stars += bintang_per_div
+                    total_stars += stars_per_div
                 total_stars += end_star
 
-        elif start_found:
-            total_stars += 5 * bintang_per_div
+        elif start_index < i < end_index:
+            total_stars += 5 * stars_per_div
 
     return total_stars
 
@@ -106,4 +121,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.ismhdhll](https://instagram.com/al.ismaill)**")
