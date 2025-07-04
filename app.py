@@ -21,29 +21,6 @@ rank_bintang_default = {
 }
 
 # Input user
-import streamlit as st
-import math
-
-st.set_page_config(page_title="MLBB Rank Match Estimator", layout="centered")
-st.title("📈 Estimasi Pertandingan Naik Rank - Mobile Legends")
-
-# Mapping dari urutan rank MLBB dan bintang
-rank_order = [
-    "Warrior", "Elite", "Master", "Grandmaster",
-    "Epic", "Legend", "Mythic"
-]
-
-rank_bintang_default = {
-    "Warrior": 3,
-    "Elite": 4,
-    "Master": 4,
-    "Grandmaster": 5,
-    "Epic": 5,
-    "Legend": 5,
-    "Mythic": 0  # Mythic tidak punya divisi
-}
-
-# Input user
 col1, col2 = st.columns(2)
 
 with col1:
@@ -121,4 +98,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismhdhll](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.ismhdhdll](https://instagram.com/al.ismaill)**")
