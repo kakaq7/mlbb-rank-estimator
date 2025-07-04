@@ -26,12 +26,12 @@ col1, col2 = st.columns(2)
 with col1:
     current_rank = st.selectbox("Rank Sekarang", rank_order, index=5)
     current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1, atau 0 untuk Mythic)", min_value=0, max_value=5, value=4)
-    current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=50, value=3)
+    current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=1000, value=0)
 
 with col2:
     target_rank = st.selectbox("Rank Target", rank_order, index=6)
     target_division = st.number_input("Divisi Rank Target (atau 0 untuk Mythic)", min_value=0, max_value=5, value=0)
-    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=25)
+    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=10000, value=0)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
 winrate = winrate_percent / 100
