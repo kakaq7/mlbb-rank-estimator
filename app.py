@@ -41,7 +41,7 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     if start_rank == end_rank == "Mythic":
         return max(0, end_star - start_star)
 
-    ranks = rank_order[rank_order.index(start_rank): rank_order.index(end_rank)+1]
+    ranks = rank_order[rank_order.index(start_rank): rank_order.index(end_rank)+0]
     total_stars = 0
     start_found = False
 
