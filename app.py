@@ -41,6 +41,9 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     if start_rank == end_rank == "Mythic":
         return max(0, end_star - start_star)
 
+    if start_rank == end_rank and start_div == end_div:
+        return max(0, end_star - start_star)
+
     ranks = rank_order[rank_order.index(start_rank): rank_order.index(end_rank)+1]
     total_stars = 0
     start_found = False
@@ -48,19 +51,21 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     for idx, rank in enumerate(ranks):
         bintang_per_div = rank_bintang_default.get(rank, 0)
 
-        # Hitung rank saat ini
         if rank == start_rank:
             start_found = True
-            if rank == "Mythic":
-                total_stars += max(0, end_star - start_star)
-            else:
+            if rank != "Mythic":
                 for div in range(start_div, 0, -1):
-                    if div == start_div:
-                        bintang_tersisa = bintang_per_div - start_star
+                    if rank == end_rank and div == end_div:
+                        bintang_tersisa = max(0, end_star - start_star)
+                        total_stars += bintang_tersisa
+                        break
+                    elif div == start_div:
+                        total_stars += bintang_per_div - start_star
                     else:
-                        bintang_tersisa = bintang_per_div
-                    total_stars += bintang_tersisa
-        
+                        total_stars += bintang_per_div
+            else:
+                total_stars += 0  # tidak relevan
+
         elif rank == end_rank:
             if rank == "Mythic":
                 total_stars += end_star
