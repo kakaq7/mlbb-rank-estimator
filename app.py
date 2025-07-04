@@ -77,3 +77,7 @@ if winrate == 0:
 else:
     estimated_matches = math.ceil(total_bintang / winrate)
     st.success(f"Kamu membutuhkan sekitar {estimated_matches} pertandingan untuk naik dari {current_rank} {current_division if current_rank != 'Mythic' else ''} ⭐{current_stars} ke {target_rank} {target_division if target_rank != 'Mythic' else ''} ⭐{target_stars}, dengan winrate {winrate_percent}%")
+
+# Footer
+st.markdown("---")
+st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**")
