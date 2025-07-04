@@ -25,13 +25,13 @@ col1, col2 = st.columns(2)
 
 with col1:
     current_rank = st.selectbox("Rank Sekarang", rank_order, index=5)
-    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1, atau 0 untuk Mythic)", min_value=0, max_value=5, value=4)
-    current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=50, value=3)
+    current_division = st.number_input("Divisi Rank Sekarang (V=5 s/d I=1, atau 0 untuk Mythic)", min_value=0, max_value=5, value=2)
+    current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=50, value=5)
 
 with col2:
     target_rank = st.selectbox("Rank Target", rank_order, index=6)
     target_division = st.number_input("Divisi Rank Target (atau 0 untuk Mythic)", min_value=0, max_value=5, value=0)
-    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=25)
+    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=50, value=1)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
 winrate = winrate_percent / 100
@@ -41,32 +41,40 @@ def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, 
     if start_rank == end_rank == "Mythic":
         return max(0, end_star - start_star)
 
-    # Jika transisi dari Legend I langsung ke Mythic
-    if start_rank != "Mythic" and end_rank == "Mythic" and start_rank == "Legend" and start_div == 1:
-        # Total bintang tersisa untuk promosi
-        bintang_tersisa = rank_bintang_default[start_rank] - start_star
-        return bintang_tersisa + (end_star - 1) + 1  # termasuk 1 kemenangan untuk promosi
-
     ranks = rank_order[rank_order.index(start_rank): rank_order.index(end_rank)+1]
     total_stars = 0
+    start_found = False
 
     for idx, rank in enumerate(ranks):
         bintang_per_div = rank_bintang_default.get(rank, 0)
 
+        # Hitung rank saat ini
         if rank == start_rank:
+            start_found = True
             if rank == "Mythic":
-                total_stars += bintang_per_div - start_star
+                total_stars += max(0, end_star - start_star)
             else:
-                total_div = 5 - start_div
-                total_stars += total_div * bintang_per_div + (bintang_per_div - start_star)
-
+                for div in range(start_div, 0, -1):
+                    if div == start_div:
+                        bintang_tersisa = bintang_per_div - start_star
+                    else:
+                        bintang_tersisa = bintang_per_div
+                    total_stars += bintang_tersisa
+        
         elif rank == end_rank:
             if rank == "Mythic":
                 total_stars += end_star
             else:
-                total_stars += (5 - end_div) * bintang_per_div + end_star if end_div else end_star
-        else:
+                for div in range(5, end_div, -1):
+                    total_stars += bintang_per_div
+                total_stars += end_star
+
+        elif start_found:
             total_stars += 5 * bintang_per_div
+
+    # Tambahkan 1 untuk promosi ke Mythic jika rank target Mythic
+    if end_rank == "Mythic":
+        total_stars += 1
 
     return total_stars
 
