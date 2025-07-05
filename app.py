@@ -4,9 +4,12 @@ import math
 st.set_page_config(page_title="Estimator Naik Rank MLBB", layout="centered")
 st.title("📊 Estimasi Pertandingan Menuju Rank Target - Mobile Legends")
 
-rank_order = [
-    "Warrior", "Elite", "Master", "Grandmaster", "Epic", "Legend", "Mythic"
-]
+# Rank dan divisi
+rank_tiers = []
+for rank in ["Warrior", "Elite", "Master", "Grandmaster", "Epic", "Legend"]:
+    for div in ["V", "IV", "III", "II", "I"]:
+        rank_tiers.append(f"{rank} {div}")
+rank_tiers.append("Mythic")  # Mythic tidak punya divisi
 
 rank_bintang_default = {
     "Warrior": 3,
@@ -18,29 +21,16 @@ rank_bintang_default = {
     "Mythic": 0
 }
 
-divisi_labels = {
-    "I (tertinggi)": 1,
-    "II": 2,
-    "III": 3,
-    "IV": 4,
-    "V (terendah)": 5,
-    "Mythic (tanpa divisi)": 0
-}
-divisi_options = list(divisi_labels.keys())
-
+# Input User
 st.header("🔢 Input Data")
 col1, col2 = st.columns(2)
 
 with col1:
-    start_rank = st.selectbox("Rank Awal", rank_order, index=4)
-    start_div_label = st.selectbox("Divisi Rank Awal", divisi_options, index=2)
-    start_div = divisi_labels[start_div_label]
-    start_stars = st.number_input("Bintang Awal", min_value=0, max_value=999, value=2)
+    start_tier = st.selectbox("Rank Awal", rank_tiers, index=20)
+    start_stars = st.number_input("Bintang Awal", min_value=0, max_value=999, value=3)
 
 with col2:
-    end_rank = st.selectbox("Rank Target", rank_order, index=5)
-    end_div_label = st.selectbox("Divisi Rank Target", divisi_options, index=4)
-    end_div = divisi_labels[end_div_label]
+    end_tier = st.selectbox("Rank Target", rank_tiers, index=26)
     end_stars = st.number_input("Bintang Target", min_value=0, max_value=999, value=1)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 43)
@@ -56,43 +46,52 @@ with col4:
 protection = star_protection_rate / 100
 bonus = star_raising_bonus / 100
 
-# Fungsi menghitung jumlah bintang dari start ke end
-def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, end_star):
-    if start_rank == end_rank == "Mythic":
+# Fungsi menghitung bintang total
+def get_rank_base(rank_name):
+    if rank_name == "Mythic":
+        return (6, 0)  # indeks tier, 0 divisi
+    rank_parts = rank_name.split()
+    rank = rank_parts[0]
+    roman = rank_parts[1]
+    roman_map = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5}
+    div = roman_map[roman]
+    rank_index = ["Warrior", "Elite", "Master", "Grandmaster", "Epic", "Legend"].index(rank)
+    return (rank_index, div)
+
+def calculate_total_stars(start_name, start_star, end_name, end_star):
+    if start_name == end_name == "Mythic":
         return max(0, end_star - start_star)
-    if start_rank == end_rank and start_div == end_div:
-        return max(0, end_star - start_star)
+
+    start_rank, start_div = get_rank_base(start_name)
+    end_rank, end_div = get_rank_base(end_name)
 
     total = 0
-    start_idx = rank_order.index(start_rank)
-    end_idx = rank_order.index(end_rank)
+    for r in range(start_rank, end_rank + 1):
+        rank_name = ["Warrior", "Elite", "Master", "Grandmaster", "Epic", "Legend", "Mythic"][r]
+        bintang_per_div = rank_bintang_default[rank_name]
 
-    for idx in range(start_idx, end_idx + 1):
-        rank = rank_order[idx]
-        bintang_per_div = rank_bintang_default[rank]
+        if rank_name == "Mythic":
+            total += end_star if r == end_rank else 0
+            continue
 
-        if rank == start_rank:
-            for d in range(start_div, 0, -1):
-                if rank == end_rank and d == end_div:
+        div_start = start_div if r == start_rank else 5
+        div_end = end_div if r == end_rank else 1
+
+        for d in range(div_start, div_end - 1, -1):
+            if r == start_rank and d == start_div:
+                if r == end_rank and d == end_div:
                     total += max(0, (bintang_per_div - start_star) + end_star)
-                    return total
-                elif d == start_div:
-                    total += bintang_per_div - start_star
                 else:
-                    total += bintang_per_div
-
-        elif rank == end_rank:
-            for d in range(5, end_div - 1, -1):
+                    total += bintang_per_div - start_star
+            elif r == end_rank and d == end_div:
+                total += end_star
+            else:
                 total += bintang_per_div
-            total += end_star
-
-        elif start_idx < idx < end_idx:
-            total += 5 * bintang_per_div
 
     return total
 
-# Perhitungan
-total_bintang = calculate_total_stars(start_rank, start_div, start_stars, end_rank, end_div, end_stars)
+# Hitung total bintang dan pertandingan
+total_bintang = calculate_total_stars(start_tier, start_stars, end_tier, end_stars)
 bintang_per_match = (winrate * (1 + bonus)) - ((1 - winrate) * (1 - protection))
 
 st.markdown("---")
