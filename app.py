@@ -4,62 +4,143 @@ import math
 st.set_page_config(page_title="MLBB Rank Match Estimator", layout="centered")
 st.title("📈 Estimasi Pertandingan Naik Rank - Mobile Legends")
 
-# Struktur rank dan divisi
-rank_tiers = ["Warrior", "Elite", "Master", "Grandmaster", "Epic", "Legend", "Mythic"]
-divisions_per_tier = {
-    "Warrior": ["III", "II", "I"],
-    "Elite": ["III", "II", "I"],
-    "Master": ["III", "II", "I"],
-    "Grandmaster": ["V", "IV", "III", "II", "I"],
-    "Epic": ["V", "IV", "III", "II", "I"],
-    "Legend": ["V", "IV", "III", "II", "I"],
-    "Mythic": [""]  # Tanpa divisi
+# Mapping dari urutan rank MLBB dan bintang
+rank_order = [
+    "Warrior", "Elite", "Master", "Grandmaster",
+    "Epic", "Legend", "Mythic"
+]
+
+rank_bintang_default = {
+    "Warrior": 3,
+    "Elite": 4,
+    "Master": 4,
+    "Grandmaster": 5,
+    "Epic": 5,
+    "Legend": 5,
+    "Mythic": 0  # Mythic tidak punya divisi
 }
 
-# Buat daftar linear dari semua kombinasi rank-divisi
-rank_division_order = []
-for tier in rank_tiers:
-    for div in divisions_per_tier[tier]:
-        rank_division_order.append(f"{tier} {div}".strip())
+# Divisi dalam format angka (1-5) ditampilkan sebagai label Romawi
+divisi_labels = {
+    "I (tertinggi)": 1,
+    "II": 2,
+    "III": 3,
+    "IV": 4,
+    "V (terendah)": 5,
+    "Mythic (tanpa divisi)": 0
+}
+divisi_options = list(divisi_labels.keys())
 
-# Input pengguna
+# Input user
 col1, col2 = st.columns(2)
 
 with col1:
-    start_rank_div = st.selectbox("Rank Sekarang", rank_division_order, index=rank_division_order.index("Legend III"))
-    if "Mythic" in start_rank_div:
-        start_star = st.number_input("Bintang Sekarang (Mythic)", min_value=1, max_value=1000, value=1)
-    else:
-        start_star = st.number_input("Bintang Sekarang", min_value=1, max_value=5, value=5)
+    current_rank = st.selectbox("Rank Sekarang", rank_order, index=5)
+    current_division_label = st.selectbox("Divisi Rank Sekarang", divisi_options, index=2)
+    current_division = divisi_labels[current_division_label]
+    current_stars = st.number_input("Jumlah Bintang Sekarang", min_value=0, max_value=999, value=5)
 
 with col2:
-    end_rank_div = st.selectbox("Rank Target", rank_division_order, index=rank_division_order.index("Legend I"))
-    if "Mythic" in end_rank_div:
-        end_star = st.number_input("Bintang Target (Mythic)", min_value=1, max_value=1000, value=1)
-    else:
-        end_star = st.number_input("Bintang Target", min_value=1, max_value=5, value=1)
+    target_rank = st.selectbox("Rank Target", rank_order, index=5)
+    target_division_label = st.selectbox("Divisi Rank Target", divisi_options, index=1)
+    target_division = divisi_labels[target_division_label]
+    target_stars = st.number_input("Jumlah Bintang Target", min_value=0, max_value=999, value=4)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
 winrate = winrate_percent / 100
 
-# Hitung total bintang berdasarkan urutan linear
-def calculate_required_stars(start_rank, start_star, end_rank, end_star):
-    if rank_division_order.index(end_rank) < rank_division_order.index(start_rank):
-        return 0
-    total = 0
-    for i in range(rank_division_order.index(start_rank), rank_division_order.index(end_rank)):
-        total += 5  # Tiap divisi ada 5 bintang kecuali Mythic
-    total += end_star - start_star
-    return max(0, total)
+# Tambahan fitur realistik
+col3, col4 = st.columns(2)
 
-needed_stars = calculate_required_stars(start_rank_div, start_star, end_rank_div, end_star)
+with col3:
+    star_protection_rate = st.slider("Star Protection Point (%)", 0, 100, 0, step=5)
+with col4:
+    star_raising_bonus = st.slider("Star Raising Bonus (%)", 0, 100, 0, step=5)
 
-# Estimasi pertandingan
-if winrate == 0:
-    st.error("Winrate tidak boleh 0%")
+# Fungsi menghitung jumlah bintang total antara 2 rank
+def calculate_total_stars(start_rank, start_div, start_star, end_rank, end_div, end_star):
+    if start_rank == end_rank == "Mythic":
+        return max(0, end_star - start_star)
+
+    if start_rank == end_rank and start_div == end_div:
+        return max(0, end_star - start_star)
+
+    total_stars = 0
+    start_index = rank_order.index(start_rank)
+    end_index = rank_order.index(end_rank)
+    promoted_early = False
+
+    for i in range(start_index, end_index + 1):
+        rank = rank_order[i]
+        stars_per_div = rank_bintang_default[rank]
+
+        if rank == start_rank:
+            if rank == "Mythic":
+                total_stars += 0
+            else:
+                for div in range(start_div, 0, -1):
+                    if rank == end_rank and div == end_div:
+                        if start_star == stars_per_div:
+                            if start_rank == end_rank and start_div - 1 == end_div:
+                                return end_star
+                            elif rank_order.index(end_rank) == rank_order.index(start_rank) + 1 and end_div == 5:
+                                return end_star
+                            else:
+                                total_stars += 1
+                                promoted_early = True
+                        else:
+                            total_stars += max(0, (stars_per_div - start_star) + end_star)
+                        return total_stars
+                    elif div == start_div:
+                        if start_star == stars_per_div:
+                            if start_rank == end_rank and start_div - 1 == end_div:
+                                return end_star
+                            elif rank_order.index(end_rank) == rank_order.index(start_rank) + 1 and end_div == 5:
+                                return end_star
+                            else:
+                                total_stars += 1
+                                promoted_early = True
+                        else:
+                            total_stars += stars_per_div - start_star
+                    else:
+                        total_stars += stars_per_div
+
+        elif rank == end_rank:
+            if rank == "Mythic":
+                total_stars += end_star
+            else:
+                for div in range(5, end_div - 1, -1):  # termasuk end_div
+                    total_stars += stars_per_div
+                total_stars += end_star if not promoted_early else max(0, end_star - 1)
+
+        elif start_index < i <= end_index:
+            if rank != "Mythic":
+                if rank == end_rank:
+                    for div in range(5, end_div - 1, -1):
+                        total_stars += stars_per_div
+                    total_stars += end_star if not promoted_early else max(0, end_star - 1)
+                else:
+                    total_stars += 5 * stars_per_div
+
+    return total_stars
+
+# Hitung bintang total yang dibutuhkan
+base_bintang = calculate_total_stars(
+    current_rank, current_division, current_stars,
+    target_rank, target_division, target_stars
+)
+
+# Hitung bintang bersih per pertandingan berdasarkan winrate dan proteksi/bonus
+bonus = star_raising_bonus / 100
+protection = star_protection_rate / 100
+
+bintang_per_match = (winrate * (1 + bonus)) - ((1 - winrate) * (1 - protection))
+
+if bintang_per_match <= 0:
+    st.error("Dengan konfigurasi winrate, bonus, dan proteksi saat ini, kamu tidak akan bisa naik rank.")
 else:
-    estimated_matches = math.ceil(needed_stars / winrate)
-    st.success(f"Kamu membutuhkan sekitar {estimated_matches} pertandingan untuk naik dari {start_rank_div} ⭐{start_star} ke {end_rank_div} ⭐{end_star}, dengan winrate {winrate_percent}%")
+    estimated_matches = math.ceil(base_bintang / bintang_per_match)
+    st.success(f"Kamu membutuhkan sekitar {estimated_matches} pertandingan untuk naik dari {current_rank} {current_division_label if current_rank != 'Mythic' else ''} ⭐{current_stars} ke {target_rank} {target_division_label if target_rank != 'Mythic' else ''} ⭐{target_stars}, dengan winrate {winrate_percent}% dan fitur tambahan aktif.")
 
 # Footer
 st.markdown("---")
