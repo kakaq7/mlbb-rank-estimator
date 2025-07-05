@@ -27,11 +27,17 @@ col1, col2 = st.columns(2)
 
 with col1:
     start_rank_div = st.selectbox("Rank Sekarang", rank_division_order, index=rank_division_order.index("Legend III"))
-    start_star = st.number_input("Bintang Sekarang", min_value=1, max_value=5, value=5)
+    if "Mythic" in start_rank_div:
+        start_star = st.number_input("Bintang Sekarang (Mythic)", min_value=1, max_value=1000, value=1)
+    else:
+        start_star = st.number_input("Bintang Sekarang", min_value=1, max_value=5, value=5)
 
 with col2:
     end_rank_div = st.selectbox("Rank Target", rank_division_order, index=rank_division_order.index("Legend I"))
-    end_star = st.number_input("Bintang Target", min_value=1, max_value=5, value=1)
+    if "Mythic" in end_rank_div:
+        end_star = st.number_input("Bintang Target (Mythic)", min_value=1, max_value=1000, value=1)
+    else:
+        end_star = st.number_input("Bintang Target", min_value=1, max_value=5, value=1)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 65)
 winrate = winrate_percent / 100
@@ -42,7 +48,7 @@ def calculate_required_stars(start_rank, start_star, end_rank, end_star):
         return 0
     total = 0
     for i in range(rank_division_order.index(start_rank), rank_division_order.index(end_rank)):
-        total += 5  # Tiap divisi ada 5 bintang
+        total += 5  # Tiap divisi ada 5 bintang kecuali Mythic
     total += end_star - start_star
     return max(0, total)
 
@@ -57,4 +63,4 @@ else:
 
 # Footer
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismfghaill](https://instagram.com/al.ismaill)**")
+st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**")
