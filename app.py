@@ -22,7 +22,7 @@ rank_bintang_default = {
 }
 
 # Input User
-st.header("🔢 Input Data")
+st.header("🔢 Input Data Kenaikan Rank")
 col1, col2 = st.columns(2)
 
 with col1:
@@ -30,8 +30,8 @@ with col1:
     start_stars = st.number_input("Bintang Awal", min_value=0, max_value=999, value=3)
 
 with col2:
-    end_tier = st.selectbox("Rank Target", rank_tiers, index=20)
-    end_stars = st.number_input("Bintang Target", min_value=0, max_value=999, value=4)
+    end_tier = st.selectbox("Rank Target", rank_tiers, index=26)
+    end_stars = st.number_input("Bintang Target", min_value=0, max_value=999, value=1)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 43)
 winrate = winrate_percent / 100
@@ -91,7 +91,7 @@ total_bintang = calculate_total_stars(start_tier, start_stars, end_tier, end_sta
 bintang_per_match = (winrate * (1 + bonus)) - ((1 - winrate) * (1 - protection))
 
 st.markdown("---")
-st.header("📈 Hasil Estimasi")
+st.header("📈 Hasil Estimasi Kenaikan Rank")
 
 if bintang_per_match <= 0:
     st.error("Dengan konfigurasi saat ini, kamu tidak akan bisa naik rank. Naikkan winrate atau tingkatkan proteksi/bonus.")
@@ -101,4 +101,46 @@ else:
     st.success(f"Estimasi pertandingan yang dibutuhkan: {estimated_matches} match")
 
 st.markdown("---")
-st.markdown("**Dibuat oleh [@al.ismaill](https://instagram.com/al.ismaill)**")
+st.header("🧠 Estimasi Proteksi dan Bonus Berdasarkan Data Nyata")
+
+with st.expander("Estimasi Berdasarkan Data Match"):
+    real_col1, real_col2 = st.columns(2)
+    with real_col1:
+        data_start_rank = st.selectbox("Rank Awal (Data Nyata)", rank_tiers, index=20)
+        data_start_star = st.number_input("Bintang Awal (Data Nyata)", min_value=0, max_value=999, value=2)
+    with real_col2:
+        data_end_rank = st.selectbox("Rank Saat Ini (Data Nyata)", rank_tiers, index=20)
+        data_end_star = st.number_input("Bintang Saat Ini", min_value=0, max_value=999, value=3)
+
+    match_count = st.number_input("Total Pertandingan", min_value=1, max_value=9999, value=207)
+    winrate_input = st.slider("Winrate dari Match Tersebut (%)", 1, 100, 43)
+    winrate_real = winrate_input / 100
+
+    net_stars = calculate_total_stars(data_start_rank, data_start_star, data_end_rank, data_end_star)
+    wins = int(round(match_count * winrate_real))
+    losses = match_count - wins
+
+    net_star_theory = wins - losses
+    compensations = net_stars - net_star_theory
+
+    st.subheader("📊 Estimasi Hasil")
+    st.write(f"Kemenangan: {wins} match")
+    st.write(f"Kekalahan: {losses} match")
+    st.write(f"Bintang bersih teoritis: {net_star_theory}")
+    st.write(f"Bintang bersih aktual: {net_stars}")
+    st.write(f"Bintang dikompensasi (bonus/proteksi): {compensations}")
+
+    if wins > 0 and losses > 0:
+        bonus_percent = (compensations / wins) * 100 / 2
+        protect_percent = (compensations / losses) * 100 / 2
+        st.success(f"Perkiraan Star Bonus Rate: ± {bonus_percent:.1f}%")
+        st.success(f"Perkiraan Star Protection Rate: ± {protect_percent:.1f}%")
+    elif wins > 0:
+        bonus_percent = (compensations / wins) * 100
+        st.success(f"Perkiraan Star Bonus Rate: ± {bonus_percent:.1f}%")
+    elif losses > 0:
+        protect_percent = (compensations / losses) * 100
+        st.success(f"Perkiraan Star Protection Rate: ± {protect_percent:.1f}%")
+
+st.markdown("---")
+st.markdown("**Dibuat oleh [@al.ismaijhll](https://instagram.com/al.ismaill)**")
