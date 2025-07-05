@@ -30,8 +30,8 @@ with col1:
     start_stars = st.number_input("Bintang Awal", min_value=0, max_value=999, value=3)
 
 with col2:
-    end_tier = st.selectbox("Rank Target", rank_tiers, index=26)
-    end_stars = st.number_input("Bintang Target", min_value=0, max_value=999, value=1)
+    end_tier = st.selectbox("Rank Target", rank_tiers, index=20)
+    end_stars = st.number_input("Bintang Target", min_value=0, max_value=999, value=4)
 
 winrate_percent = st.slider("Winrate (%)", 1, 100, 43)
 winrate = winrate_percent / 100
@@ -49,7 +49,7 @@ bonus = star_raising_bonus / 100
 # Fungsi menghitung bintang total
 def get_rank_base(rank_name):
     if rank_name == "Mythic":
-        return (6, 0)  # indeks tier, 0 divisi
+        return (6, 0)
     rank_parts = rank_name.split()
     rank = rank_parts[0]
     roman = rank_parts[1]
@@ -59,7 +59,7 @@ def get_rank_base(rank_name):
     return (rank_index, div)
 
 def calculate_total_stars(start_name, start_star, end_name, end_star):
-    if start_name == end_name == "Mythic":
+    if start_name == end_name:
         return max(0, end_star - start_star)
 
     start_rank, start_div = get_rank_base(start_name)
@@ -69,10 +69,6 @@ def calculate_total_stars(start_name, start_star, end_name, end_star):
     for r in range(start_rank, end_rank + 1):
         rank_name = ["Warrior", "Elite", "Master", "Grandmaster", "Epic", "Legend", "Mythic"][r]
         bintang_per_div = rank_bintang_default[rank_name]
-
-        if rank_name == "Mythic":
-            total += end_star if r == end_rank else 0
-            continue
 
         div_start = start_div if r == start_rank else 5
         div_end = end_div if r == end_rank else 1
